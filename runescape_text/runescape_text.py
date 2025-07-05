@@ -6,6 +6,11 @@ import sys, getopt, os
 black = (0,0,0,255)
 transparent = (255, 255, 255, 0)
 
+def get_size(font, text):
+	"""Get text size from getbbox, returns (width, height) like old getsize"""
+	bbox = font.getbbox(text)
+	return (bbox[2] - bbox[0], bbox[3] - bbox[1])
+
 def parse_string(input, delimiter=':', maxlen=80):
 	global effect
 	global advcolour
@@ -81,7 +86,7 @@ def multi_frame_save(img_set, file="out.gif", frametime=100):
 
 def no_effect(string):
 	if(advcolour=="none"):
-		size = fnt.getsize(string)
+		size = get_size(fnt, string)
 		img = Image.new('P', (size[0], size[1]+4), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
@@ -91,7 +96,7 @@ def no_effect(string):
 		draw.text((x,y), string, font=fnt, fill=colourmap[colour])
 		return [img]
 	else:
-		size = fnt.getsize(string)
+		size = get_size(fnt, string)
 		img_set=[]
 		frame = 0
 		while(frame < fps*4):
@@ -107,7 +112,7 @@ def no_effect(string):
 		return img_set
 
 def scroll_effect(string):
-	size = fnt.getsize(string)
+	size = get_size(fnt, string)
 	img_set=[]
 	x_offset = 0
 	x_increment = max(round(size[0]/30), 3)
@@ -130,7 +135,7 @@ def scroll_effect(string):
 	return img_set
 
 def slide_effect(string):
-	size = fnt.getsize(string)
+	size = get_size(fnt, string)
 	img_set=[]
 	y_offset = 0
 	y_increment = max(round(size[1]/10), 2)
@@ -182,7 +187,7 @@ def slide_effect(string):
 	return img_set
 	
 def wave_effect(string):
-	size = fnt.getsize(string)
+	size = get_size(fnt, string)
 	img_set=[]
 	frames=20
 	amplitude = (size[1]/3)
@@ -191,7 +196,7 @@ def wave_effect(string):
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
-			x = fnt.getsize(string[:i])[0]+(1*i)
+			x = get_size(fnt, string[:i])[0]+(1*i)
 			wave = math.sin((((f+1)/(frames))*math.pi*2)+(i*(math.pi/6)))
 			y = amplitude + wave*amplitude
 			if(advcolour=="none"):
@@ -206,7 +211,7 @@ def wave_effect(string):
 	return img_set
 
 def wave2_effect(string):
-	size = fnt.getsize(string)
+	size = get_size(fnt, string)
 	img_set=[]
 	frames=20
 	x_amplitude = size[0]/(len(string)*4)
@@ -217,7 +222,7 @@ def wave2_effect(string):
 		draw.fontmode = "1"
 		for i in range(len(string)):
 			wave = math.sin((((f+1)/(frames))*math.pi*2)+(i*(math.pi/6)))
-			x = 2+fnt.getsize(string[:i])[0] +(1*i)- wave*x_amplitude
+			x = 2+get_size(fnt, string[:i])[0] +(1*i)- wave*x_amplitude
 			y = y_amplitude + wave*y_amplitude
 			if(advcolour=="none"):
 				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
@@ -229,7 +234,7 @@ def wave2_effect(string):
 	return img_set
 
 def shake_effect(string):
-	size = fnt.getsize(string)
+	size = get_size(fnt, string)
 	img_set=[]
 	frames=20
 	max_amplitude = size[1]/3
@@ -238,7 +243,7 @@ def shake_effect(string):
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
-			x = fnt.getsize(string[:i])[0]+(1*i)
+			x = get_size(fnt, string[:i])[0]+(1*i)
 			amplitude = -max_amplitude
 			current_peak = (f/frames)*100
 			if i > current_peak:
