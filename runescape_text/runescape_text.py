@@ -4,7 +4,7 @@ import sys, getopt, os
 
 # Preset colors
 black = (0,0,0,255)
-transparent = (255, 255, 255, 0)
+transparent = (255,255,254) # Hope this color never shows up....
 
 def parse_string(input, delimiter=':', maxlen=80):
 	global effect
@@ -53,7 +53,7 @@ def single_frame_save(img, file="out.png", append=""):
 	# First colour in palette is the bg, and should be transparent
 	tr = [p[0], p[1], p[2]]
 	img = img.convert("RGBA")
-	px = img.getdata()
+	px = img.get_flattened_data()
 
 	newpx = []
 	for p in px:
@@ -79,9 +79,16 @@ def multi_frame_save(img_set, file="out.gif", frametime=100):
 	)
 	return file
 
+def font_size(font, string):
+	# Swap in for deprecated getsize
+	bbox = font.getbbox(string, anchor="lt")
+	width = bbox[2] - bbox[0]
+	height = bbox[3] - bbox[1] 
+	return (width, height)
+
 def no_effect(string):
 	if(advcolour=="none"):
-		size = fnt.getsize(string)
+		size = font_size(fnt, string)
 		img = Image.new('P', (size[0], size[1]+4), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
@@ -91,7 +98,7 @@ def no_effect(string):
 		draw.text((x,y), string, font=fnt, fill=colourmap[colour])
 		return [img]
 	else:
-		size = fnt.getsize(string)
+		size = font_size(fnt, string)
 		img_set=[]
 		frame = 0
 		while(frame < fps*4):
@@ -107,7 +114,7 @@ def no_effect(string):
 		return img_set
 
 def scroll_effect(string):
-	size = fnt.getsize(string)
+	size = font_size(fnt, string)
 	img_set=[]
 	x_offset = 0
 	x_increment = max(round(size[0]/30), 3)
@@ -130,7 +137,7 @@ def scroll_effect(string):
 	return img_set
 
 def slide_effect(string):
-	size = fnt.getsize(string)
+	size = font_size(fnt, string)
 	img_set=[]
 	y_offset = 0
 	y_increment = max(round(size[1]/10), 2)
@@ -182,16 +189,16 @@ def slide_effect(string):
 	return img_set
 	
 def wave_effect(string):
-	size = fnt.getsize(string)
+	size = font_size(fnt, string)
 	img_set=[]
 	frames=20
 	amplitude = (size[1]/3)
 	for f in range(frames):
-		img = Image.new('P', (size[0]+(1*len(string)), round(size[1]+(amplitude*2)+0.5)), transparent)
+		img = Image.new('P', (size[0]+(1*len(string)), math.ceil(size[1]+(amplitude*3))), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
-			x = fnt.getsize(string[:i])[0]+(1*i)
+			x = font_size(fnt, string[:i])[0]+(1*i)
 			wave = math.sin((((f+1)/(frames))*math.pi*2)+(i*(math.pi/6)))
 			y = amplitude + wave*amplitude
 			if(advcolour=="none"):
@@ -206,18 +213,18 @@ def wave_effect(string):
 	return img_set
 
 def wave2_effect(string):
-	size = fnt.getsize(string)
+	size = font_size(fnt, string)
 	img_set=[]
 	frames=20
 	x_amplitude = size[0]/(len(string)*4)
 	y_amplitude = (size[1]/4)
 	for f in range(frames):
-		img = Image.new('P', (2+size[0]+(1*len(string)), round(size[1]+(y_amplitude*2)+0.5)), transparent)
+		img = Image.new('P', (2+size[0]+(1*len(string)), math.ceil(size[1]+(y_amplitude*3))), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
 			wave = math.sin((((f+1)/(frames))*math.pi*2)+(i*(math.pi/6)))
-			x = 2+fnt.getsize(string[:i])[0] +(1*i)- wave*x_amplitude
+			x = 2+font_size(fnt, string[:i])[0] +(1*i)- wave*x_amplitude
 			y = y_amplitude + wave*y_amplitude
 			if(advcolour=="none"):
 				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
@@ -229,16 +236,16 @@ def wave2_effect(string):
 	return img_set
 
 def shake_effect(string):
-	size = fnt.getsize(string)
+	size = font_size(fnt, string)
 	img_set=[]
 	frames=20
 	max_amplitude = size[1]/3
 	for f in range(frames):
-		img = Image.new('P', (size[0]+(1*len(string)), round(size[1]+(max_amplitude*2)+0.5)), transparent)
+		img = Image.new('P', (size[0]+(1*len(string)), math.ceil(size[1]+(max_amplitude*3))), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
-			x = fnt.getsize(string[:i])[0]+(1*i)
+			x = font_size(fnt,string[:i])[0]+(1*i)
 			amplitude = -max_amplitude
 			current_peak = (f/frames)*100
 			if i > current_peak:
