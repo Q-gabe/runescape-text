@@ -20,7 +20,7 @@ setuptools.setup(
 	],
 	python_requires='>=3.6',
     install_requires=[
-        "pillow",
+        "pillow>=10",
     ],
     package_data={"":["data/runescape_uf.ttf"]},
 )
