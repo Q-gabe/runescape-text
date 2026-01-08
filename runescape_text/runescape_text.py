@@ -88,7 +88,7 @@ def font_size(font, string):
 
 def no_effect(string):
 	size = font_size(fnt, string)
-	print(size)
+	# print(size)
 	if(advcolour=="none"):
 		img = Image.new('P', (size[0], size[1]+4), transparent)
 		draw = ImageDraw.Draw(img)
