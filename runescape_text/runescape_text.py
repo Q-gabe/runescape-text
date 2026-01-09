@@ -6,11 +6,6 @@ import sys, getopt, os
 black = (0,0,0,255)
 transparent = (0, 0, 0, 0)
 
-def get_size(font, text):
-	"""Get text size from getbbox, returns (width, height) like old getsize"""
-	bbox = font.getbbox(text)
-	return (bbox[2] - bbox[0], bbox[3] - bbox[1])
-
 def parse_string(input, delimiter=':', maxlen=80):
 	global effect
 	global advcolour
@@ -70,19 +65,26 @@ def multi_frame_save(img_set, file="out.gif", frametime=100):
     )
     return file
 
+def font_size(font, string):
+	# Swap in for deprecated getsize
+	bbox = font.getbbox(string, anchor='lt')
+	width = bbox[2] - bbox[0]
+	height = bbox[3] - bbox[1] 
+	return (width, height)
+
 def no_effect(string):
+	size = font_size(fnt, string)
+	# print(size)
 	if(advcolour=="none"):
-		size = get_size(fnt, string)
 		img = Image.new('RGBA', (size[0], size[1]+4), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		x = 0
 		y = 2
-		draw.text((x+1,y+1), string, font=fnt, fill=black)
-		draw.text((x,y), string, font=fnt, fill=colourmap[colour])
+		draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+		draw.text((x,y), string, font=fnt, fill=colourmap[colour], anchor='lt')
 		return [img]
 	else:
-		size = get_size(fnt, string)
 		img_set=[]
 		frame = 0
 		while(frame < fps*4):
@@ -91,14 +93,14 @@ def no_effect(string):
 			draw.fontmode = "1"
 			x = 0
 			y = 2
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame))
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame), anchor='lt')
 			img_set.append(img)
 			frame = frame+1
 		return img_set
 
 def scroll_effect(string):
-	size = get_size(fnt, string)
+	size = font_size(fnt, string)
 	img_set=[]
 	x_offset = 0
 	x_increment = max(round(size[0]/30), 3)
@@ -110,18 +112,18 @@ def scroll_effect(string):
 		x = size[0]+1-x_offset
 		y = 2
 		if(advcolour=="none"):
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=colourmap[colour])
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=colourmap[colour], anchor='lt')
 		else:
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame))
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame), anchor='lt')
 		img_set.append(img)
 		x_offset=x_offset+x_increment
 		frame = frame+1
 	return img_set
 
 def slide_effect(string):
-	size = get_size(fnt, string)
+	size = font_size(fnt, string)
 	img_set=[]
 	y_offset = 0
 	y_increment = max(round(size[1]/10), 2)
@@ -133,11 +135,11 @@ def slide_effect(string):
 		x = 0
 		y = y_offset-size[1]
 		if(advcolour=="none"):
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=colourmap[colour])
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=colourmap[colour], anchor='lt')
 		else:
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame))
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame), anchor='lt')
 		img_set.append(img)
 		y_offset=y_offset+y_increment
 		frame = frame+1
@@ -148,11 +150,11 @@ def slide_effect(string):
 		x = 0
 		y = y_offset-size[1]
 		if(advcolour=="none"):
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=colourmap[colour])
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=colourmap[colour], anchor='lt')
 		else:
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame))
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame), anchor='lt')
 		img_set.append(img)
 		frame = frame+1
 	while(y_offset < (size[1]*2)+4):
@@ -162,74 +164,81 @@ def slide_effect(string):
 		x = 0
 		y = y_offset-size[1]
 		if(advcolour=="none"):
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=colourmap[colour])
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=colourmap[colour], anchor='lt')
 		else:
-			draw.text((x+1,y+1), string, font=fnt, fill=black)
-			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame))
+			draw.text((x+1,y+1), string, font=fnt, fill=black, anchor='lt')
+			draw.text((x,y), string, font=fnt, fill=advcolourmap[advcolour](frame), anchor='lt')
 		img_set.append(img)
 		y_offset=y_offset+y_increment
 		frame = frame+1
 	return img_set
 	
 def wave_effect(string):
-	size = get_size(fnt, string)
+	size = font_size(fnt, string)
 	img_set=[]
 	frames=20
 	amplitude = (size[1]/3)
 	for f in range(frames):
-		img = Image.new('RGBA', (size[0]+(1*len(string)), round(size[1]+(amplitude*2)+0.5)), transparent)
+		img = Image.new('RGBA', (size[0]+len(string), math.ceil(size[1]+(amplitude*2))+1), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
-			x = get_size(fnt, string[:i])[0]+(1*i)
+			prefix_size = font_size(fnt, string[:i])
+			letter_size = font_size(fnt, string[i]) # to deal with non-ascenders
+			x = prefix_size[0]+i
 			wave = math.sin((((f+1)/(frames))*math.pi*2)+(i*(math.pi/6)))
-			y = amplitude + wave*amplitude
+			y = amplitude + wave*amplitude + (size[1]-letter_size[1])
 			if(advcolour=="none"):
-				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
+				draw.text((x+1,y+1), string[i], font=fnt, fill=black, anchor='lt')
 				# draw.text((x+10,y+10), string, font=fnt, fill=(8,8,8))
-				draw.text((x,y), string[i], font=fnt, fill=colourmap[colour])
+				draw.text((x,y), string[i], font=fnt, fill=colourmap[colour], anchor='lt')
 				# draw.text((x,y), string[i], font=fnt, fill=(150,150,150))
 			else:
-				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
-				draw.text((x,y), string[i], font=fnt, fill=advcolourmap[advcolour](f))
+				draw.text((x+1,y+1), string[i], font=fnt, fill=black, anchor='lt')
+				draw.text((x,y), string[i], font=fnt, fill=advcolourmap[advcolour](f), anchor='lt')
 		img_set.append(img)
 	return img_set
 
 def wave2_effect(string):
-	size = get_size(fnt, string)
+	size = font_size(fnt, string)
 	img_set=[]
 	frames=20
 	x_amplitude = size[0]/(len(string)*4)
 	y_amplitude = (size[1]/4)
 	for f in range(frames):
-		img = Image.new('RGBA', (2+size[0]+(1*len(string)), round(size[1]+(y_amplitude*2)+0.5)), transparent)
+		img = Image.new('RGBA', (size[0]+len(string)+math.ceil(x_amplitude)+1, math.ceil(size[1]+(y_amplitude*2))+1), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
+			prefix_size = font_size(fnt, string[:i])
+			letter_size = font_size(fnt, string[i]) # to deal with non-ascenders
 			wave = math.sin((((f+1)/(frames))*math.pi*2)+(i*(math.pi/6)))
-			x = 2+get_size(fnt, string[:i])[0] +(1*i)- wave*x_amplitude
-			y = y_amplitude + wave*y_amplitude
+			# x_amplitude padding + width of prev characters + 1 extra px letter spacing - wave adjustment
+			x = math.ceil(x_amplitude) + prefix_size[0] + i - wave*x_amplitude
+			y = y_amplitude + wave*y_amplitude + (size[1]-letter_size[1])
 			if(advcolour=="none"):
-				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
-				draw.text((x,y), string[i], font=fnt, fill=colourmap[colour])
+				draw.text((x+1,y+1), string[i], font=fnt, fill=black, anchor='lt')
+				draw.text((x,y), string[i], font=fnt, fill=colourmap[colour], anchor='lt')
 			else:
-				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
-				draw.text((x,y), string[i], font=fnt, fill=advcolourmap[advcolour](f))
+				draw.text((x+1,y+1), string[i], font=fnt, fill=black, anchor='lt')
+				draw.text((x,y), string[i], font=fnt, fill=advcolourmap[advcolour](f), anchor='lt')
 		img_set.append(img)
 	return img_set
 
 def shake_effect(string):
-	size = get_size(fnt, string)
+	size = font_size(fnt, string)
 	img_set=[]
 	frames=20
 	max_amplitude = size[1]/3
 	for f in range(frames):
-		img = Image.new('RGBA', (size[0]+(1*len(string)), round(size[1]+(max_amplitude*2)+0.5)), transparent)
+		img = Image.new('RGBA', (size[0]+(1*len(string)), math.ceil(size[1]+(max_amplitude*2))+1), transparent)
 		draw = ImageDraw.Draw(img)
 		draw.fontmode = "1"
 		for i in range(len(string)):
-			x = get_size(fnt, string[:i])[0]+(1*i)
+			prefix_size = font_size(fnt, string[:i])
+			letter_size = font_size(fnt, string[i]) # to deal with non-ascenders
+			x = prefix_size[0]+i
 			amplitude = -max_amplitude
 			current_peak = (f/frames)*100
 			if i > current_peak:
@@ -243,13 +252,13 @@ def shake_effect(string):
 				amplitude = amplitude*0.75
 			if(rad>(math.pi*2)):
 				amplitude = amplitude*0.33
-			y = max_amplitude + wave*amplitude
+			y = max_amplitude + wave*amplitude + (size[1]-letter_size[1])
 			if(advcolour=="none"):
-				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
-				draw.text((x,y), string[i], font=fnt, fill=colourmap[colour])
+				draw.text((x+1,y+1), string[i], font=fnt, fill=black, anchor='lt')
+				draw.text((x,y), string[i], font=fnt, fill=colourmap[colour], anchor='lt')
 			else:
-				draw.text((x+1,y+1), string[i], font=fnt, fill=black)
-				draw.text((x,y), string[i], font=fnt, fill=advcolourmap[advcolour](f))
+				draw.text((x+1,y+1), string[i], font=fnt, fill=black, anchor='lt')
+				draw.text((x,y), string[i], font=fnt, fill=advcolourmap[advcolour](f), anchor='lt')
 		img_set.append(img)
 	return img_set
 
